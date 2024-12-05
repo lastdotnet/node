@@ -4,18 +4,22 @@ services:
   node:
     restart: unless-stopped
     build: .
+    container_name: hl-node
+    environment:
+      - RUST_LOG=debug
     ports:
       - "4001:4001"
       - "4002:4002"
+      - "3001:3001"
     volumes:
-      - hl-data:/home/hluser/hl/data
+      - /.hl-data:/home/hluser/hl/data
 
   pruner:
     restart: unless-stopped
     build: ./pruner
+    container_name: hl-pruner
     volumes:
-      - hl-data:/home/hluser/hl/data
-
+      - /.hl-data:/home/hluser/hl/data
 
 volumes:
   hl-data:
