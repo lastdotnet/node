@@ -8,11 +8,16 @@ ARG USER_GID=$USER_UID
 RUN groupadd --gid $USER_GID $USERNAME \
     && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
     && apt-get update -y \
-    && apt-get install -y curl gosu net-tools \
+    && apt-get install -y curl gosu net-tools nginx \
     && mkdir -p /home/$USERNAME/hl/data \
     && mkdir -p /home/$USERNAME/hl/tmp/shell_rs_out \
     && chown -R $USERNAME:$USERNAME /home/$USERNAME/hl \
     && chown -R $USERNAME:$USERNAME /usr/local/bin
+
+# nginx
+COPY nginx/nginx.conf /etc/nginx/nginx.conf
+COPY nginx/default.conf /etc/nginx/conf.d/default.conf
+RUN rm /etc/nginx/sites-enabled/default
 
 WORKDIR /home/$USERNAME
 
@@ -30,9 +35,11 @@ ADD --chown=$USER_UID:$USER_GID https://binaries.hyperliquid.xyz/Testnet/non_val
 # add the binary
 ADD --chown=$USER_UID:$USER_GID --chmod=700 https://binaries.hyperliquid.xyz/Testnet/hl-visor /usr/local/bin/hl-visor
 
-# gossip ports
+# ports
 EXPOSE 4001
 EXPOSE 4002
+EXPOSE 3001
+EXPOSE 8001
 
-# use gosu to run directly as hluser
-ENTRYPOINT chown -R hluser:hluser /home/hluser/hl && exec gosu hluser hl-visor run-non-validator --serve-eth-rpc
+# start nginx in background and run the node
+ENTRYPOINT nginx && chown -R hluser:hluser /home/hluser/hl && exec gosu hluser hl-visor run-non-validator --serve-eth-rpc

@@ -10,7 +10,7 @@ services:
     ports:
       - "4001:4001"
       - "4002:4002"
-      - "3001:3001"
+      - "3001:8001"
     volumes:
       - /.hl-data:/home/hluser/hl/data
 
